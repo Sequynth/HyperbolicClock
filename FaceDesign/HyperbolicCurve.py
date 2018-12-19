@@ -19,6 +19,11 @@ phi     = 45 / 180*np.pi;
 # max z for calculation
 zMax    = rMax * np.tan(phi);
 
+# length of hand
+l       = 2*zMax / np.sin(phi);
+# projected into xy-plane
+l_xy    = l * np.cos(phi);
+
 # plot range in z-direction
 h       = np.linspace(-zMax, zMax, 100);
 
@@ -34,19 +39,21 @@ alphaPlus   = np.arctan2(r, (h/np.tan(phi)) ) / np.pi*180;
 alphaMinus  = -alphaPlus
 
 # equidistant steps of alpha in rad
-degSteps    = 0.25;
+degSteps    = 1;
 alpha       = np.arange(degSteps, 180, degSteps) / 180*np.pi;
 # steps per hour
 sph     = 360/degSteps / 12;
-print('steps per hour: {0}'.format(sph));
+print('Steps per hour: %.1f at %.3f steps' % (sph, degSteps));
+print('Angle per hour: {0}'.format(360/12));
 # height as a function of alpha
 hAlpha  = r * np.tan(phi)/np.tan(alpha)
 
-# calculate angle during which the hand does not potrude the Face
+# calculate angle during which the hand does not protrude the Face
+alphaNP = 2* np.arctan(r / (l_xy/2)) / np.pi*180;
+print('Angle of no protrusion: %.2f' % alphaNP);
 
 
-
-# get the indices for the angles, that are potruded between -zMax and zMax
+# get the indices for the angles, that are protruded between -zMax and zMax
 indices = np.where((hAlpha <=zMax) & (hAlpha >= -zMax));
 # start with half the steps it takes for one hour
 iMin = sph/2;
