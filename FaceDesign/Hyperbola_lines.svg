@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with matplotlib (http://matplotlib.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="159.39226mm"
+   version="1.1"
+   viewBox="0 0 465.72595 451.82055"
+   width="164.29776mm"
+   id="svg262"
+   sodipodi:docname="Hyperbola_line_fix.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+  <defs
+     id="defs1603" />
+  <metadata
+     id="metadata266">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     id="namedview264"
+     showgrid="false"
+     inkscape:zoom="0.61458333"
+     inkscape:cx="342.0955"
+     inkscape:cy="977.7497"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg262"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     units="mm"
+     inkscape:document-units="mm">
+    <sodipodi:guide
+       position="-17.305688,225.96008"
+       orientation="0,1"
+       id="guide1563"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="232.87499,204.68833"
+       orientation="1,0"
+       id="guide1583"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,0,255)" />
+  </sodipodi:namedview>
+  <path
+     id="path237"
+     style="fill:none;stroke:#ff7f0e;stroke-width:0.28346455;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+     d="M -232.86299,225.91006 C -185.1869,176.17439 -136.4705,127.2224 -92.91084,73.76267 -76.63046,52.3265 -57.91448,29.37099 -56.52366,1.2996497 -56.50306,-26.81186 -75.04736,-50.11891 -91.12888,-71.51007 c -42.78465,-53.01796 -90.93685,-101.37113 -137.99283,-150.54166 -1.2471,-1.28625 -2.49418,-2.57251 -3.74128,-3.85876 M 232.86297,225.91006 C 185.18688,176.17439 136.47047,127.2224 92.91082,73.76267 76.63046,52.3265 57.91446,29.37099 56.52364,1.2996497 56.50304,-26.81188 75.04734,-50.11891 91.12886,-71.51007 c 42.78465,-53.01796 90.93685,-101.37113 137.99283,-150.54166 1.2471,-1.28625 2.49418,-2.57251 3.74128,-3.85876"
+     inkscape:connector-curvature="0" />
+</svg>
