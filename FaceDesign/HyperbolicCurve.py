@@ -8,22 +8,21 @@ This is a temporary script file.
 import numpy as np
 import matplotlib.pyplot as plt
 
+## physical parameters of the clock
 # max radius for calculations
-rMax    =  80;#mm
+rMax    = 80;#mm
 # distance of hour hand from axis
-r       =  20;#mm
-
+r       = 20;#mm
 # angle of hour hand relative to xy-plane
 phi     = 45 / 180*np.pi;
 
+## values derived from physical parameters
 # max z for calculation
 zMax    = rMax * np.tan(phi);
-
 # length of hand
 l       = 2*zMax / np.sin(phi);
 # projected into xy-plane
 l_xy    = l * np.cos(phi);
-
 # plot range in z-direction
 h       = np.linspace(-zMax, zMax, 100);
 
@@ -39,19 +38,19 @@ alphaPlus   = np.arctan2(r, (h/np.tan(phi)) ) / np.pi*180;
 alphaMinus  = -alphaPlus
 
 # equidistant steps of alpha in rad
-degSteps    = 1;
-alpha       = np.arange(degSteps, 180, degSteps) / 180*np.pi;
+degSteps    = 0.25;
+alpha       = np.arange(degSteps, 360, degSteps) / 180*np.pi;
 # steps per hour
 sph     = 360/degSteps / 12;
 print('Steps per hour: %.1f at %.3f steps' % (sph, degSteps));
 print('Angle per hour: {0}'.format(360/12));
 # height as a function of alpha
-hAlpha  = r * np.tan(phi)/np.tan(alpha)
+hAlpha = np.zeros_like(alpha);
+hAlpha =  r * np.tan(phi)/np.tan(alpha);
 
 # calculate angle during which the hand does not protrude the Face
 alphaNP = 2* np.arctan(r / (l_xy/2)) / np.pi*180;
 print('Angle of no protrusion: %.2f' % alphaNP);
-
 
 # get the indices for the angles, that are protruded between -zMax and zMax
 indices = np.where((hAlpha <=zMax) & (hAlpha >= -zMax));
@@ -65,30 +64,20 @@ print('Maximum: {0}'.format(iMax))
 dotAngles   = degSteps * np.arange(iMin, iMax, sph) / 180*np.pi;
 dotRadii    = r / np.sin(dotAngles);
 dotHeights  = r * np.tan(phi)/np.tan(dotAngles)
+print(dotHeights)
 
-print(dotRadii)
-
-# angle of asymptote to y axis
-gamma = np.arctan(2/np.cos(phi))
-
-x = np.linspace(-rMax, rMax, 2);
-
+# show results
 plt.figure()
 plt.plot(x1, h)
 plt.plot(x2, h)
-plt.plot(alphaPlus, h)
-plt.plot(alphaMinus, h)
 plt.plot(dotRadii, dotHeights, 'r+')
-plt.plot([-rMax, rMax], [-zMax, zMax])
+#plt.plot([-rMax, rMax], [-zMax, zMax])
 plt.axis('equal')
 #plt.savefig("Hyperbola.svg", format="svg")
-#plt.xlim(-R, R)
-#plt.ylim(-R, R)
 
 plt.figure()
 plt.plot(alpha, hAlpha)
 plt.plot()
 plt.ylim(-zMax, zMax)
-# plt.axis('equal')
 
 plt.show()
