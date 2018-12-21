@@ -3,7 +3,9 @@
 #include <CheapStepper.h>
 #include <ESP8266HTTPClient.h>
 // load string containing HTML website
-#include <D:\03_Projects\10_HyperbolicClock\_10_HClock_firmware\index.h>
+#include <D:\03_Projects\10_HyperbolicClock\HClock_firmware\index.h>
+// load string containing HTML website for wifi input
+#include <D:\03_Projects\10_HyperbolicClock\HClock_firmware\wifiInput.h>
 
 //ESP Web Server Library to host a web page
 #include <ESP8266WebServer.h>
@@ -23,67 +25,60 @@ HTTPClient http;
 CheapStepper stepper (5,4,0,2);
 
 //===============================================================
+// CONSTANTS
+// # of steps per rotation
+float nROTATION = 4075.772;
+//float nROTATION = 4096;
+// # of steps per minute
+float spm = nROTATION / (60.0*12.0);
+
+// indicated time at zero-position
+int minuteZero  = 0;
+int hourZero    = 6;
+
+// PINS
+int SWITCH_PIN = 14;
+int MOSFET_PIN = 10;
+
+//===============================================================
 // VARIABLES
-int lightSwitchPin = 14;
-int val = 0;
 // time
 int hour   = 0;
 int minute = 0;
-String hourStr = "";
-String minuteStr = "";
 bool timeOnce = false;
+int minuteDiff;
+// stores the millis counter at the time of the last time reading
+unsigned long millisLast;
 
-//===============================================================
-// This routine is executed when you open its IP in browser
-//===============================================================
-void handleRoot() {
- Serial.println("You called root page");
- String s = MAIN_page; //Read HTML contents
- server.send(200, "text/html", s); //Send web page
-}
+bool ISRcalled;
 
-void turnCW() {
-  if (digitalRead(lightSwitchPin) == HIGH)
-  {
-    Serial.println("Turn CW");
-    stepper.moveDegrees(true, 90);
-  }
-  else
-  {
-    Serial.println("Disabled");
-  }
-}
-
-void turnCCW() { 
- if (digitalRead(lightSwitchPin) == HIGH)
-  {
-    Serial.println("Turn CCW");
-    stepper.moveDegrees(false, 90);
-  }
-  else
-  {
-    Serial.println("Disabled");
-  }
-}
 //==============================================================
 //                  SETUP
 //==============================================================
 void setup(void){
-  pinMode(lightSwitchPin, INPUT);
+  // set pinmodes
+  pinMode(SWITCH_PIN, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
-  
-  stepper.setRpm(10); 
-  
+  pinMode(MOSFET_PIN, OUTPUT);
+
+  // set interrupt pin
+  attachInterrupt(digitalPinToInterrupt(SWITCH_PIN), ISR, RISING);
+
+  stepper.setRpm(10);
+
   Serial.begin(115200);
-  
+
   WiFi.begin(ssid, password);     //Connect to your WiFi router
   Serial.println("");
-  
+
   // Wait for connection
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
+
+  // If connection not succesfull, start a server and show website to enter
+  // Wifi SSID and password.
 
   //If connection successful show IP address in serial monitor
   Serial.println("");
@@ -91,58 +86,96 @@ void setup(void){
   Serial.println(ssid);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());  //IP address assigned to your ESP
- 
-  server.on("/", handleRoot);      //Which routine to handle at root location. This is display page
-  server.on("/turnCW", turnCW);    //as Per  <a href="turnCW">, Subroutine to be called
-  server.on("/turnCCW", turnCCW);
 
-  server.begin();                  //Start server
-  Serial.println("HTTP server started");
+  homingCycle();
+
+  // use mDNS to make finding the IP address easier
+  // https://circuits4you.com/2017/12/31/esp8266-mdns/
+
 }
 //==============================================================
 //                     LOOP
 //==============================================================
 void loop(void){
-  val = digitalRead(lightSwitchPin);
-  digitalWrite(LED_BUILTIN, val);
-  if (val == LOW)
-  {
-    stepper.move(true, 1);
-    delay(40);
-    stepper.move(true, 1);
-    delay(40);
-    stepper.move(true, 1);
-    delay(40);
-    stepper.move(true, 1);
-    delay(40);
-    stepper.move(true, 1);
-    delay(40);
+  // check, if one minute has passed
+  if (millis() - millisLast > 60000) {
+
+    // calculate necessary number of steps
+
+    // turn on motor driver using MOSFET, while coil pins are still in the old state
+    digitalWrite(MOSFET_PIN, HIGH);
+
+    // advance steps by changing pattern
+
+    // turn of stepper monitor
+    digitalWrite(MOSFET_PIN, LOW);
+
+    // increment number of minutes
+
+    // reset millisSinceLast
+    millisLast = 0;
   }
-  else
-  {
-    stepper.move(false, 1);
-    getTime();
-    delay(20);
-  }
-  //delay(2000);
-  //server.handleClient();          //Handle client requests
+
 }
 
 //==============================================================
-// getTime()
-// sends a GET request to a webserver that returns infomration
-// about time and date. The time is extracted from the message.
-void getTime()
-{
+//                     UTILITY FUNCTIONS
+//==============================================================
+
+void getTime() {
+  // getTime()
+  // sends a GET request to a webserver that returns infomration
+  // about time and date. The time is extracted from the message.
   http.begin("http://worldtimeapi.org/api/timezone/Europe/Berlin.txt");  //Specify request destination
-  int httpCode = http.GET(); 
+  // also consider https://timezonedb.com/api
+  int httpCode = http.GET();
   if (httpCode > 0)
   {
     String payload = http.getString();   //Get the request response payload
     Serial.println(payload);             //Print the response payload
     int start = payload.indexOf("datetime");
-    hour   = payload.substring(start+21,start+23).toInt();
+    hour   = payload.substring(start+21,start+23).toInt() % 12;
     minute = payload.substring(start+24,start+26).toInt();
   }
-}
+} // getTime
 
+void homingCycle() {
+  // homingCycle()
+  // is called from setup() in order to set the time for the first time.
+  // rotates the clock until the lightswitch is interrupted and the ISR is called.
+  // afterwards the 'loop'-function continues.
+
+  // rotate until lightSwitch, which calls the ISR on hit
+  ISRcalled = false;
+  while(!ISRcalled) {
+    // make a clockwise step
+    stepper.stepCW();
+    // dont be too fast
+    delay(20);
+  }
+} // homingCycle
+
+void ISR() {
+  // interrupt routine is called, when the lightswitch is interrupted. The program
+  // gets the time from the internet, moves to the correct position and
+  // continues with normal operation of the for loop.
+
+  // get current time from website
+  getTime();
+
+  // move to current time:
+  // calculate time difference in minutes
+ minuteDiff = hour*60+minute - (hourZero*60+minuteZero);
+ //for negative times, subtract it from the amount of minutes in 12 hours
+ if (minuteDiff < 0)
+  minuteDiff = 60*12 + minuteDiff;
+
+  // steps per minute
+  spm = nROTATION / (60.0*12.0);
+
+  // move by necessary amount of Steps
+  stepper.move(true, round(minuteDiff*spm));
+
+  // to get out of loop-function in 'homingCycle'.
+  ISRcalled = true;
+} // ISR
