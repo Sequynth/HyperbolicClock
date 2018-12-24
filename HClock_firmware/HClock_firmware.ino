@@ -1,7 +1,10 @@
+#define BLYNK_PRINT Serial
+
 #include <ESP8266WiFi.h>
 #include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
 #include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+#include <BlynkSimpleEsp8266.h>
 #include <ESP8266HTTPClient.h>
 #include <Stepper.h>
 #include <OneWire.h>
@@ -13,6 +16,9 @@
 //Declare a global object variable from the ESP8266WebServer class.
 ESP8266WebServer server(80); //Server on port 80
 HTTPClient http;
+
+// blynk token
+char blynk_token[34] = "token";
 
 //===============================================================
 // CONSTANTS
@@ -91,6 +97,14 @@ void setup(void) {
   //first parameter is name of access point, second is the password
   wifiManager.autoConnect("HyperbolicClockWLANSetup");
 
+  // connect with blynk
+  Blynk.config(blynk_token);
+
+  if (Blynk.connect(30))
+    Serial.println("BLYNK Connection Fail");
+  else
+    Serial.println("BLYNK Connected");
+
   homingCycle();
 
   // use mDNS to make finding the IP address easier
@@ -101,8 +115,10 @@ void setup(void) {
 //                     LOOP
 //==============================================================
 void loop(void) {
+  // kepp Bylnk connection running
+  Blynk.run();
   // check, if one minute has passed
-  if ( (millis() - millisLast)/6000 >= nMinutes+1 ) {
+  if ( (millis() - millisLast)/60000 >= nMinutes+1 ) {
     // if the lightswitch was hit, get the time again and go there.
     if(ISRcalled) {
       detachInterrupt(SWITCH_PIN);
@@ -117,13 +133,6 @@ void loop(void) {
       stepsPerformed = 0;
     }
     else {
-      // every 5 minutes, measure the Temperature
-      if( !((nMinutes+1) % 5) ) {
-        getTemp();
-        sendTemp();
-        Serial.println(temperature);
-      }
-
       // calculate necessary number of steps
       int steps = round((nMinutes+1)*spm) - stepsPerformed;
 
@@ -136,6 +145,13 @@ void loop(void) {
         Serial.println("Step");
         stepper.step(-1);
         delay(100);
+      }
+
+      // every 5 minutes, measure the Temperature and send to blynk
+      if( !((nMinutes+1) % 2) ) {
+        getTemp();
+        sendTemp();
+        Serial.println(temperature);
       }
 
       // increase minute and step counter
@@ -300,7 +316,7 @@ void getTemp()
 }
 
 //calculate the Temperature from the data returned by the DS18B20
-double calcTemp(byte LS, byte MS)
+void calcTemp(byte LS, byte MS)
 {
   /*+0.1 um Rundungsfehler zu beheben:
     pow(2,i)=3.999...  @ i=2
@@ -328,9 +344,14 @@ double calcTemp(byte LS, byte MS)
   }
   if (MS & 0x80 == 1)
     temperature = -temperature;
-  return temperature;
 }
 
 void sendTemp() {
   // sends the current temperature to online data storage
+
+  // avoid known issue wit ds18b20 sensor
+  if (temperature != 84.0) {
+    Serial.println("Sending to blynk...");
+    Blynk.virtualWrite(V0, temperature);
+  }
 }
