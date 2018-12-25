@@ -64,20 +64,26 @@ print('Maximum: {0}'.format(iMax))
 dotAngles   = degSteps * np.arange(iMin, iMax, sph) / 180*np.pi;
 dotRadii    = r / np.sin(dotAngles);
 dotHeights  = r * np.tan(phi)/np.tan(dotAngles)
+dotNumber   = np.roll(np.arange(12, 0, -1), 8);
 print(dotHeights)
+print(dotAngles / np.pi*180)
 
 # show results
 plt.figure()
 plt.plot(x1, h)
 plt.plot(x2, h)
 plt.plot(dotRadii, dotHeights, 'r+')
+
+for ii in range(0, 12, 1):
+    plt.text(dotRadii[ii], dotHeights[ii], str(dotNumber[ii]));
+
 #plt.plot([-rMax, rMax], [-zMax, zMax])
 plt.axis('equal')
 #plt.savefig("Hyperbola.svg", format="svg")
 
-plt.figure()
-plt.plot(alpha, hAlpha)
-plt.plot()
-plt.ylim(-zMax, zMax)
+#plt.figure()
+#plt.plot(alpha, hAlpha)
+#plt.plot()
+#plt.ylim(-zMax, zMax)
 
 plt.show()
