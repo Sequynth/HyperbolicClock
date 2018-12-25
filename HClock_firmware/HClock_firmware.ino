@@ -36,13 +36,13 @@ int startDeccel = 50;
 int stepDelay = 10;
 
 // indicated time at zero-position
-int minuteZero  = 0;
-int hourZero    = 6;
+int minuteZero  = 30;
+int hourZero    = 8;
 
 // PINS
+int TEMPERATURE_PIN = D1;
 int SWITCH_PIN      = D2;
 int MOSFET_PIN      = D3;
-int TEMPERATURE_PIN = D1;
 
 //===============================================================
 // VARIABLES
@@ -143,7 +143,7 @@ void loop(void) {
       for (int ii = 0; ii < steps; ii++)
       {
         Serial.println("Step");
-        stepper.step(-1);
+        stepper.step(1);
         delay(100);
       }
 
@@ -208,7 +208,7 @@ void homingCycle() {
   ISRcalled = false;
   while (!ISRcalled) {
     // make a clockwise step
-    stepper.step(-1);
+    stepper.step(1);
 
     delay(stepDelay);
   }
@@ -263,7 +263,7 @@ void fromZeroToTime() {
   {
     // calling step(round(minuteDiff * spm)) does not work on nodemcu as this
     // blocks the reset of the watchdog timer and causes the MCU to reset.
-    stepper.step(-1);
+    stepper.step(1);
     delay(stepDelay);
     if (ii > (round(minuteDiff * spm) - startDeccel))
     {
