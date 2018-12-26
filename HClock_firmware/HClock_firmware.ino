@@ -23,9 +23,9 @@ char blynk_token[34] = "token";
 //===============================================================
 // CONSTANTS
 // stepper motor gear rotatio
-//float gearRatio = 64;
+float gearRatio = 64;
 // http://forum.arduino.cc/index.php?topic=71964.15
-float gearRatio = (31.0 * 32.0 * 26.0 * 22.0) / (11.0 * 10.0 * 9.0 * 9.0);
+//float gearRatio = (31.0 * 32.0 * 26.0 * 22.0) / (11.0 * 10.0 * 9.0 * 9.0);
 // # of steps per rotation (32 when using Full steps, 64 when using half steps)
 float nROTATION = 32.0 * gearRatio;
 // # of steps per minute
@@ -34,6 +34,9 @@ float spm = nROTATION / (60.0 * 12.0);
 int startDeccel = 50;
 // delay in ms between steps
 int stepDelay = 10;
+// in order to work with stepper.h, the second and third wires
+// need to be swapped...
+Stepper stepper (nROTATION, D5, D7, D6, D8);
 
 // indicated time at zero-position
 int minuteZero  = 30;
@@ -67,12 +70,6 @@ bool crc;
 double temperature;
 
 bool ISRcalled;
-
-//===============================================================
-// STEPPER
-// in order to work with stepper.h, the second and third wires
-// need to be swapped...
-Stepper stepper (nROTATION, D5, D7, D6, D8);
 
 //==============================================================
 //                  SETUP
